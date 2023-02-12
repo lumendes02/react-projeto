@@ -1,75 +1,52 @@
-import logo from './logo.svg';
 import './App.css';
 import { Component } from 'react';
 
 
 class App extends Component {
     state = {
-      name: 'lucas mendes',
-      counter: 0
+      posts: []
     };
   
+    componentDidMount() {
+      this.loadPosts();
+    }
 
-  handlePClick = () => {
-    this.setState({name: 'SODA!!!'});
-  }
+    loadPosts = async () => {
+      const postsReponse = fetch('https://jsonplaceholder.typicode.com/posts');
+      const photosReponse = fetch('https://jsonplaceholder.typicode.com/photos');
 
-  handleAClick = (e) => {
+      const [posts, photos] = await Promise.all([postsReponse,photosReponse]);
 
-    const {counter} = this.state;
+      const postsjson = await posts.json();
+      const photosjson = await photos.json();
+
+      const postsAndPhotos = postsjson.map((post, index) => {
+        return {...post, cover: photosjson[index].url}
+      });
+
+      this.setState({posts: postsAndPhotos})
+    }
     
-    this.setState({counter: counter + 1})
-  }
 
   render() {
-    const {name, counter} = this.state;
+    const {posts} = this.state;
 
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p onClick={this.handlePClick}>
-            {name} {counter}
-          </p>
-          <a
-            onClick={this.handleAClick}
-            className="App-link"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            este é o link
-          </a>
-        </header>
-      </div>
+      <section className='container'>
+        <div className="posts">
+          {posts.map(post => (
+            <div className='post'>
+              <img src={post.cover} alt={post.title}></img>
+              <div key={post.id} className="post-content">
+                <h1>{post.title}</h1>
+                <h2>{post.body}</h2>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     );
   }
 }
-
-
-
-
-
-
-
-// function App() {
-//   return (
-//     <div className="App">
-//       <header className="App-header">
-//         <img src={logo} className="App-logo" alt="logo" />
-//         <p>
-//           Edit <code>src/App.js</code> and save to reload.
-//         </p>
-//         <a
-//           className="App-link"
-//           href="https://reactjs.org"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//         >
-//           Learn React
-//         </a>
-//       </header>
-//     </div>
-//   );
-// }
 
 export default App;
