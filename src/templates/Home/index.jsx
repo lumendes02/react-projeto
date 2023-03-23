@@ -1,5 +1,5 @@
 import './styles.css';
-import { Component, useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 
 import { loadPosts } from '../../utils/load-posts';
 import { Posts } from '../../components/Posts';
@@ -17,14 +17,14 @@ export const Home = () => {
 
   const noMorePosts = page + postsPerPage >= allPosts.length;
 
-  const filteredPosts = !!searchValue ? 
+  const filteredPosts = searchValue ?
     allPosts.filter(post => {
       return post.title.toLowerCase().includes(searchValue.toLowerCase());
     })
     : posts;
 
     const handleLoadPosts = useCallback(async (page,postsPerPage) => {
-      
+
       const postsAndPhotos = await loadPosts();
 
       setPosts(postsAndPhotos.slice(page, postsPerPage));
@@ -39,10 +39,10 @@ export const Home = () => {
     const loadMorePosts = () => {
       const nextPage = page + postsPerPage;
       const nextPosts = allPosts.slice(nextPage, nextPage + postsPerPage);
-     
+
       //posts.length = 0;
       posts.push(...nextPosts);
-      
+
       setPosts(posts);
       setPage(nextPage);
     }
@@ -52,7 +52,7 @@ export const Home = () => {
 
       setSearchValue(value);
     }
-    
+
 
   return (
     <section className='container'>
@@ -62,11 +62,11 @@ export const Home = () => {
           <h1>Search Value: {searchValue}</h1>
         )}
 
-        <TextInput 
-          searchValue={searchValue} 
+        <TextInput
+          searchValue={searchValue}
           handleChange={handleChange}
           placeholder='Digite sua pesquisa'
-        /> 
+        />
       </div>
 
       {filteredPosts.length > 0 && (
@@ -78,7 +78,7 @@ export const Home = () => {
 
       <div className="button-container">
         {!searchValue && (
-          <Button 
+          <Button
             text="Load more posts"
             onClick={loadMorePosts}
             disabled={noMorePosts}
@@ -97,7 +97,7 @@ export const Home = () => {
 //       postsPerPage: 2,
 //       searchValue: ''
 //     };
-  
+
 //     async componentDidMount() {
 //       await this.loadPosts();
 //     }
@@ -120,10 +120,10 @@ export const Home = () => {
 //       } = this.state
 //       const nextPage = page + postsPerPage;
 //       const nextPosts = allPosts.slice(nextPage, nextPage + postsPerPage);
-     
+
 //       //posts.length = 0;
 //       posts.push(...nextPosts);
-      
+
 //       this.setState({posts, page: nextPage})
 //     }
 
@@ -131,13 +131,13 @@ export const Home = () => {
 //       const {value} = e.target;
 //       this.setState({searchValue: value});
 //     }
-    
+
 
 //   render() {
 //     const {posts,postsPerPage,page, allPosts, searchValue} = this.state;
 //     const noMorePosts = page + postsPerPage >= allPosts.length;
 
-//     const filteredPosts = !!searchValue ? 
+//     const filteredPosts = !!searchValue ?
 //     allPosts.filter(post => {
 //       return post.title.toLowerCase().includes(searchValue.toLowerCase());
 //     })
@@ -151,11 +151,11 @@ export const Home = () => {
 //             <h1>Search Value: {searchValue}</h1>
 //           )}
 
-//           <TextInput 
-//             searchValue={searchValue} 
+//           <TextInput
+//             searchValue={searchValue}
 //             handleChange={this.handleChange}
 //             placeholder='Digite sua pesquisa'
-//           /> 
+//           />
 //         </div>
 
 //         {filteredPosts.length > 0 && (
@@ -167,7 +167,7 @@ export const Home = () => {
 
 //         <div className="button-container">
 //           {!searchValue && (
-//             <Button 
+//             <Button
 //               text="Load more posts"
 //               onClick={this.loadMorePosts}
 //               disabled={noMorePosts}
