@@ -1,182 +1,71 @@
 import './styles.css';
 import React, { useEffect, useState, useCallback } from 'react';
 
-import { loadPosts } from '../../utils/load-posts';
-import { Posts } from '../../components/Posts';
-import { Button } from '../../components/Button';
-import { TextInput } from '../../components/TextInput';
+const useAsync = (asyncFunction, shouldRun) => {
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+  const [status, setStatus] = useState('idle');
 
+  const run = useCallback(() => {
+    setResult(null);
+    setError(null);
+    setStatus('pending');
 
+    return asyncFunction()
+      .then((response) => {
+        setStatus('settled');
+        setResult(response)
+      })
+      .catch((error) => {
+        setStatus('error');
+        setError(error);
+      });
+  }, [asyncFunction]);
 
-export const Home = () => {
-  const [posts, setPosts] = useState([]);
-  const [allPosts, setallPosts] = useState([]);
-  const [page, setPage] = useState(0);
-  const [postsPerPage] = useState(10);
-  const [searchValue, setSearchValue] = useState('');
+  useEffect(() => {
+    if (shouldRun)
+      run();
 
-  const noMorePosts = page + postsPerPage >= allPosts.length;
+  }, [run,shouldRun])
 
-  const filteredPosts = searchValue ?
-    allPosts.filter(post => {
-      return post.title.toLowerCase().includes(searchValue.toLowerCase());
-    })
-    : posts;
-
-    const handleLoadPosts = useCallback(async (page,postsPerPage) => {
-
-      const postsAndPhotos = await loadPosts();
-
-      setPosts(postsAndPhotos.slice(page, postsPerPage));
-      setallPosts(postsAndPhotos);
-    }, []);
-
-    useEffect(() => {
-      console.log('asd');
-      handleLoadPosts(0,postsPerPage);
-    }, [handleLoadPosts, postsPerPage]);
-
-    const loadMorePosts = () => {
-      const nextPage = page + postsPerPage;
-      const nextPosts = allPosts.slice(nextPage, nextPage + postsPerPage);
-
-      //posts.length = 0;
-      posts.push(...nextPosts);
-
-      setPosts(posts);
-      setPage(nextPage);
-    }
-
-    const handleChange = (e) => {
-      const {value} = e.target;
-
-      setSearchValue(value);
-    }
-
-
-  return (
-    <section className='container'>
-
-      <div className='search-container'>
-        {!!searchValue && (
-          <h1>Search Value: {searchValue}</h1>
-        )}
-
-        <TextInput
-          searchValue={searchValue}
-          handleChange={handleChange}
-          placeholder='Digite sua pesquisa'
-        />
-      </div>
-
-      {filteredPosts.length > 0 && (
-         <Posts posts={filteredPosts}/>
-      )}
-     {filteredPosts.length === 0 && (
-         <p>Não existem posts</p>
-      )}
-
-      <div className="button-container">
-        {!searchValue && (
-          <Button
-            text="Load more posts"
-            onClick={loadMorePosts}
-            disabled={noMorePosts}
-          />
-        )}
-      </div>
-    </section>
-  );
+  return [run, result, error, status]
 }
 
-// export class Home2 extends Component {
-//     state = {
-//       posts: [],
-//       allPosts:[],
-//       page: 0,
-//       postsPerPage: 2,
-//       searchValue: ''
-//     };
+const fetchData = async () => {
+  const data = await fetch('https://jsonplaceholder.typicode.com/posts');
+  const json = await data.json();
+  return json;
+}
 
-//     async componentDidMount() {
-//       await this.loadPosts();
-//     }
+export const Home = () => {
+  const [posts, setPosts] = useState(null);
+  const [reFetchData, result, error, status] = useAsync(fetchData, true);
 
-//     loadPosts = async () => {
-//       const {page, postsPerPage} = this.state;
-//       const postsAndPhotos = await loadPosts();
-//       this.setState({
-//         posts: postsAndPhotos.slice(page, postsPerPage),
-//         allPosts: postsAndPhotos
-//       })
-//     }
+  useEffect(() => {
+    reFetchData();
+  }, [])
 
-//     loadMorePosts = () => {
-//       const {
-//         page,
-//         postsPerPage,
-//         allPosts,
-//         posts
-//       } = this.state
-//       const nextPage = page + postsPerPage;
-//       const nextPosts = allPosts.slice(nextPage, nextPage + postsPerPage);
+  if (status === 'idle') {
+    return (
+      <pre>NADA</pre>
+    );
+  }
 
-//       //posts.length = 0;
-//       posts.push(...nextPosts);
+  if (status === 'pending') {
+    return (
+      <pre>CARREGANDO</pre>
+    );
+  }
 
-//       this.setState({posts, page: nextPage})
-//     }
+  if (status === 'error') {
+    return (
+      <pre>{JSON.stringify(error, null, 2)}</pre>
+    );
+  }
 
-//     handleChange = (e) => {
-//       const {value} = e.target;
-//       this.setState({searchValue: value});
-//     }
-
-
-//   render() {
-//     const {posts,postsPerPage,page, allPosts, searchValue} = this.state;
-//     const noMorePosts = page + postsPerPage >= allPosts.length;
-
-//     const filteredPosts = !!searchValue ?
-//     allPosts.filter(post => {
-//       return post.title.toLowerCase().includes(searchValue.toLowerCase());
-//     })
-//     : posts;
-
-//     return (
-//       <section className='container'>
-
-//         <div className='search-container'>
-//           {!!searchValue && (
-//             <h1>Search Value: {searchValue}</h1>
-//           )}
-
-//           <TextInput
-//             searchValue={searchValue}
-//             handleChange={this.handleChange}
-//             placeholder='Digite sua pesquisa'
-//           />
-//         </div>
-
-//         {filteredPosts.length > 0 && (
-//            <Posts posts={filteredPosts}/>
-//         )}
-//        {filteredPosts.length === 0 && (
-//            <p>Não existem posts</p>
-//         )}
-
-//         <div className="button-container">
-//           {!searchValue && (
-//             <Button
-//               text="Load more posts"
-//               onClick={this.loadMorePosts}
-//               disabled={noMorePosts}
-//             />
-//           )}
-//         </div>
-//       </section>
-//     );
-//   }
-// }
-
-
+  if (status === 'settled') {
+    return (
+      <pre>{JSON.stringify(result, null, 2)}</pre>
+    );
+  }
+}
